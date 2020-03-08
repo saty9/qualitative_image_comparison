@@ -22,7 +22,7 @@ from .views import *
 
 urlpatterns = [
     path('back/admin/', admin.site.urls),
-    path('back/list', list_folders),
+    path('back/list/<int:start_index>', list_folders),
     path('back/result/<slug:dirname>', response),
     path('back/results', results)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

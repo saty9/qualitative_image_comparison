@@ -9,12 +9,14 @@ from django.views.decorators.csrf import csrf_exempt
 from backend.models import Response
 from backend.settings import STATIC_ROOT
 
-BATCH_SIZE = 30
+BATCH_SIZE = 3
 
 
-def list_folders(request):
-    files = os.listdir(os.path.join(STATIC_ROOT, 'data'))
-    files = random.sample(files, min(BATCH_SIZE, len(files)))
+def list_folders(request, start_index):
+    files = sorted(os.listdir(os.path.join(STATIC_ROOT, 'data')))
+    if start_index >= len(files):
+        return JsonResponse({'files': []})
+    files = files[start_index:min(start_index + BATCH_SIZE, len(files))]
     return JsonResponse({'files': files})
 
 

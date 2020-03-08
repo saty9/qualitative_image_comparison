@@ -11,7 +11,7 @@
             B:<img v-bind:src="'/back/static/data/' + image_list[index] + '/'+ (flipped ? 'B': 'A') + '.png'"
                    @click="img_clicked('B')"><br>
         </div>
-        <div v-else>
+        <div v-else-if="finished">
             Thanks!
         </div>
         <div style="visibility: hidden">
@@ -31,19 +31,28 @@
         index: 0,
         just_started: true,
         flipped: false,
-        prefetched: []
+        prefetched: [],
+        finished: false,
+        overall_index: 0
       };
     },
     mounted: function () {
-      let self = this;
-      this.axios.get("/back/list").then(function (response) {
-        if (response.status == 200) {
-          self.$data.image_list = response.data.files;
-          self.preload(self.image_list);
-        }
-      })
+      this.get_more_images()
     },
     methods: {
+      get_more_images: function() {
+        let self = this;
+        this.axios.get("/back/list/"+ this.overall_index).then(function (response) {
+          if (response.status == 200) {
+            self.$data.image_list = response.data.files;
+            if (self.$data.image_list.length){
+              self.preload(self.image_list);
+            } else {
+              self.finished = true;
+            }
+          }
+        })
+      },
       img_clicked: function (letter) {
         if (letter == 'A' && this.flipped) {
           letter = 'B'
@@ -53,6 +62,11 @@
         this.axios.post('/back/result/' + this.image_list[this.index], {result: letter});
         this.flipped = Math.random() >= 0.5;
         this.index++;
+        this.overall_index++;
+        if (this.index>=this.image_list.length){
+          this.get_more_images();
+          this.index = 0;
+        }
       },
       preload: function () {
         let self = this;
