@@ -33,7 +33,8 @@
         flipped: false,
         prefetched: [],
         finished: false,
-        overall_index: 0
+        overall_index: 0,
+        session: ""
       };
     },
     mounted: function () {
@@ -45,6 +46,9 @@
         this.axios.get("/back/list/"+ this.overall_index).then(function (response) {
           if (response.status == 200) {
             self.$data.image_list = response.data.files;
+            if (response.data.session){
+              self.session = response.data.session;
+            }
             if (self.$data.image_list.length){
               self.preload(self.image_list);
             } else {
@@ -59,7 +63,7 @@
         } else if (letter == 'B' && this.flipped) {
           letter = 'A'
         }
-        this.axios.post('/back/result/' + this.image_list[this.index], {result: letter});
+        this.axios.post('/back/result/' + this.image_list[this.index], {result: letter, session:this.session});
         this.flipped = Math.random() >= 0.5;
         this.index++;
         this.overall_index++;

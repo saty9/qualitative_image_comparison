@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from django.http import JsonResponse
 import os
@@ -9,21 +10,27 @@ from django.views.decorators.csrf import csrf_exempt
 from backend.models import Response
 from backend.settings import STATIC_ROOT
 
-BATCH_SIZE = 3
+BATCH_SIZE = 10
 
 
 def list_folders(request, start_index):
+    out = {}
+    if start_index == 0:
+        out['session'] = uuid.uuid4()
     files = sorted(os.listdir(os.path.join(STATIC_ROOT, 'data')))
     if start_index >= len(files):
         return JsonResponse({'files': []})
     files = files[start_index:min(start_index + BATCH_SIZE, len(files))]
-    return JsonResponse({'files': files})
+    out['files'] = files
+    return JsonResponse(out)
 
 
 @csrf_exempt
 def response(request, dirname):
-    result = json.loads(request.body)['result']
-    Response.objects.create(dir=dirname, choice=result)
+    body = json.loads(request.body)
+    result = body['result']
+    session = body['session']
+    Response.objects.create(dir=dirname, choice=result, session=session)
     return JsonResponse({})
 
 
