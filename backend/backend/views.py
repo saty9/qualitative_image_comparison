@@ -18,6 +18,7 @@ def list_folders(request, start_index):
     if start_index == 0:
         out['session'] = uuid.uuid4()
     files = sorted(os.listdir(os.path.join(STATIC_ROOT, 'data')))
+    out['total_files'] = len(files)
     if start_index >= len(files):
         return JsonResponse({'files': []})
     files = files[start_index:min(start_index + BATCH_SIZE, len(files))]
